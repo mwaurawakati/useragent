@@ -252,7 +252,7 @@ type (
 	UserAgentConfig struct {
 		//OS limit list of os for generation
 		//OS can be string or array
-		//oprtional:default
+		//optional:default
 		OS any
 		//Navigator is the limit list of browser engines for generation
 		//Navigator can be a string or a list
