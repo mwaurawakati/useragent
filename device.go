@@ -8,16 +8,16 @@ import (
 var (
 	//go:embed data
 	f                  embed.FS
-	SMARTPHONE_DEV_IDS = loadSmartPhoneDevIDs()
+	smartphoneDevIDs = loadSmartPhoneDevIDs()
 	//TABLET_DEV_IDS     = loadPackageJsonData("/data/tablet_dev_id.json")
 )
 
-func loadSmartPhoneDevIDs() DevIDs {
+func loadSmartPhoneDevIDs() devIDs {
 	file, err := f.ReadFile("data/smartphone_dev_id.json")
 	if err != nil {
 		panic(err)
 	}
-	var devIDs DevIDs
+	var devIDs devIDs
 	err = json.Unmarshal(file, &devIDs)
 	if err != nil {
 		panic(err)

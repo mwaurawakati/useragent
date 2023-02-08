@@ -42,30 +42,30 @@ import (
 )
 
 var (
-	DEVICE_TYPE_OS = map[string][]string{
+	deviceTypeOS = map[string][]string{
 		"desktop":    {"win", "mac", "linux"},
 		"smartphone": {"android"},
 		"tablet":     {"android"},
 	}
-	OS_DEVICE_TYPE = map[string][]string{
+	osDeviceType = map[string][]string{
 		"win":     {"desktop"},
 		"linux":   {"desktop"},
 		"mac":     {"desktop"},
 		"android": {"smartphone", "tablet"},
 	}
 
-	DEVICE_TYPE_NAVIGATOR = map[string][]string{
+	deviceTypeNavigator = map[string][]string{
 		"desktop":    {"chrome", "firefox", "ie"},
 		"smartphone": {"firefox", "chrome"},
 		"tablet":     {"firefox", "chrome"},
 	}
-	NAVIGATOR_DEVICE_TYPE = map[string][]string{
+	navigatorDeviceType = map[string][]string{
 		"ie":      {"desktop"},
 		"chrome":  {"desktop", "smartphone", "tablet"},
 		"firefox": {"desktop", "smartphone", "tablet"},
 	}
 
-	OS_PLATFORM = map[string][]string{
+	osPlatform = map[string][]string{
 		"win": {
 			// Windows XP
 			"Windows NT 5.1",
@@ -123,7 +123,7 @@ var (
 		},
 	}
 
-	OS_CPU = map[string][]string{
+	osCPU = map[string][]string{
 		"win": {
 			//32bit
 			"",
@@ -148,18 +148,18 @@ var (
 			"armv8l",
 		},
 	}
-	OS_NAVIGATOR = map[string][]string{
+	osNavigator = map[string][]string{
 		"win":     {"chrome", "firefox", "ie"},
 		"mac":     {"firefox", "chrome"},
 		"linux":   {"chrome", "firefox"},
 		"android": {"firefox", "chrome"},
 	}
-	NAVIGATOR_OS = map[string][]string{
+	navigatorOS = map[string][]string{
 		"chrome":  {"win", "linux", "mac", "android"},
 		"firefox": {"win", "linux", "mac", "android"},
 		"ie":      {"win"},
 	}
-	MACOSX_CHROME_BUILD_RANGE = map[string][]int{
+	macOSXChromeBuildRange = map[string][]int{
 		// https://en.wikipedia.org/wiki/MacOS#Release_history
 		"10.8":  {0, 8},
 		"10.9":  {0, 5},
@@ -168,7 +168,7 @@ var (
 		"10.12": {0, 2},
 	}
 
-	FIREFOX_VERSION = []FirefoxVersion{
+	firefoxVERSION = []firefoxVersion{
 		{"45.0", time.Date(2016, 3, 8, 0, 0, 0, 0, time.UTC)},
 		{"46.0", time.Date(2016, 4, 26, 0, 0, 0, 0, time.UTC)},
 		{"47.0", time.Date(2016, 6, 7, 0, 0, 0, 0, time.UTC)},
@@ -180,7 +180,7 @@ var (
 
 	// Top chrome builds from website access log
 	// for september, october 2020
-	CHROME_BUILD = []string{
+	chromeBuild = []string{
 		"80.0.3987.132",
 		"80.0.3987.149",
 		"80.0.3987.99",
@@ -214,7 +214,7 @@ var (
 	}
 
 	// (numeric ver, string ver, trident ver)
-	IE_VERSION = []IEVersion{
+	ieVERSION = []ieVersion{
 		//2009
 		{8, "MSIE 8.0", "4.0"},
 		//2011
@@ -225,7 +225,7 @@ var (
 		{11, "MSIE 11.0", "7.0"},
 	}
 
-	USERAGENTTEMPLATE = map[string]any{
+	userAgentTemplate = map[string]any{
 		"firefox":           `Mozilla/5.0 ({{index .System "ua_platform"}}; rv:{{index .App "build_version"}}) Gecko/{{index .App "geckotrail"}} Firefox/{{index .App "build_version"}}`,
 		"chrome":            `Mozilla/5.0 ({{index .System "ua_platform"}}) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/{{index .App "build_version"}} Safari/537.36`,
 		"chrome_smartphone": `Mozilla/5.0 ({{index .System "ua_platform"}}) AppleWebKit/537.36	(KHTML, like Gecko) Chrome/{{index .App "build_version"}} Mobile Safari/537.36`,
@@ -236,18 +236,18 @@ var (
 )
 
 type (
-	FirefoxVersion struct {
+	firefoxVersion struct {
 		Version string
 		Date    time.Time
 	}
 
-	IEVersion struct {
+	ieVersion struct {
 		NumericVersion int
 		StringVersion  string
 		TridentVersion string
 	}
 
-	DevIDs []string
+	devIDs []string
 
 	UserAgentConfig struct {
 		//OS limit list of os for generation
@@ -257,14 +257,16 @@ type (
 		//Navigator is the limit list of browser engines for generation
 		//Navigator can be a string or a list
 		//Default:Desktop
-		//Optional
+		//Optional.
 		Navigator any
 		//DeviceType limits possible oses by device type
 		//DeviceType is a list, possible values:"desktop", "smartphone", "tablet", "all"
+		//Optional.
+		//Default Value:["desktop","smartphone", "tablet","all"]
 		DeviceType []string
 		//Platform limits possible platforms by platform
-		//Default:""
-		//Optional
+		//Default value:[""]
+		//Optional.
 		Platform []string
 	}
 
@@ -275,11 +277,11 @@ type (
 )
 
 func getFirefoxBuild() (string, string, error) {
-	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(FIREFOX_VERSION))))
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(firefoxVERSION))))
 	if err != nil {
 		return "", "", err
 	}
-	fxvs := FIREFOX_VERSION[nBig.Int64()]
+	fxvs := firefoxVERSION[nBig.Int64()]
 	//var index int
 	//var dateto time.Time
 	build_ver, date_from := fxvs.Version, fxvs.Version
@@ -287,19 +289,19 @@ func getFirefoxBuild() (string, string, error) {
 }
 
 func getChromeBuild() (string, error) {
-	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(CHROME_BUILD))))
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(chromeBuild))))
 	if err != nil {
 		return "", err
 	}
-	return CHROME_BUILD[nBig.Int64()], nil
+	return chromeBuild[nBig.Int64()], nil
 }
 
-func getIEBuild() (IEVersion, error) {
-	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(IE_VERSION))))
+func getIEBuild() (ieVersion, error) {
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(ieVERSION))))
 	if err != nil {
-		return IEVersion{}, err
+		return ieVersion{}, err
 	}
-	return IE_VERSION[nBig.Int64()], nil
+	return ieVERSION[nBig.Int64()], nil
 
 }
 
@@ -313,7 +315,7 @@ func getIEBuild() (IEVersion, error) {
 
 func fixChromeMacPlatform(platform string) (string, error) {
 	ver := strings.Split(platform, "OS X ")[1]
-	build_range := (MACOSX_CHROME_BUILD_RANGE[ver])
+	build_range := (macOSXChromeBuildRange[ver])
 	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(build_range[1])))
 	if err != nil {
 		return "", err
@@ -336,16 +338,16 @@ func buildSystemComponents(deviceType, OSID, navigatorID string) (map[string]str
 	}
 	var platform string
 	if OSID == "win" {
-		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(OS_PLATFORM["win"]))))
+		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(osPlatform["win"]))))
 		if err != nil {
 			return nil, err
 		}
-		platform_version := OS_PLATFORM["win"][nBig.Int64()]
-		nBig, err = rand.Int(rand.Reader, big.NewInt(int64(len(OS_CPU["win"]))))
+		platform_version := osPlatform["win"][nBig.Int64()]
+		nBig, err = rand.Int(rand.Reader, big.NewInt(int64(len(osCPU["win"]))))
 		if err != nil {
 			return nil, err
 		}
-		cpu := OS_CPU["win"][nBig.Int64()]
+		cpu := osCPU["win"][nBig.Int64()]
 		if cpu != "" {
 			platform = fmt.Sprintf("%s %s", platform_version, cpu)
 		} else {
@@ -359,16 +361,16 @@ func buildSystemComponents(deviceType, OSID, navigatorID string) (map[string]str
 		}, nil
 	}
 	if OSID == "linux" {
-		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(OS_CPU["linux"]))))
+		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(osCPU["linux"]))))
 		if err != nil {
 			return nil, err
 		}
-		cpu := OS_CPU["linux"][nBig.Int64()]
-		nBig, err = rand.Int(rand.Reader, big.NewInt(int64(len(OS_PLATFORM["linux"]))))
+		cpu := osCPU["linux"][nBig.Int64()]
+		nBig, err = rand.Int(rand.Reader, big.NewInt(int64(len(osPlatform["linux"]))))
 		if err != nil {
 			return nil, err
 		}
-		platform_version := OS_PLATFORM["linux"][nBig.Int64()]
+		platform_version := osPlatform["linux"][nBig.Int64()]
 		platform := fmt.Sprintf("%s %s", platform_version, cpu)
 		return map[string]string{
 			"platform_version": platform_version,
@@ -378,11 +380,11 @@ func buildSystemComponents(deviceType, OSID, navigatorID string) (map[string]str
 		}, nil
 	}
 	if OSID == "mac" {
-		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(OS_PLATFORM["mac"]))))
+		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(osPlatform["mac"]))))
 		if err != nil {
 			return nil, err
 		}
-		platform_version := OS_PLATFORM["mac"][nBig.Int64()]
+		platform_version := osPlatform["mac"][nBig.Int64()]
 		platform := platform_version
 		if navigatorID == "chrome" {
 			platform, err = fixChromeMacPlatform(platform)
@@ -407,11 +409,11 @@ func buildSystemComponents(deviceType, OSID, navigatorID string) (map[string]str
 	if !contains([]string{"smartphone", "tablet"}, deviceType) {
 		return nil, errors.New("assertion error")
 	}
-	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(OS_PLATFORM["android"]))))
+	nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(osPlatform["android"]))))
 	if err != nil {
 		return nil, err
 	}
-	platform_version := OS_PLATFORM["android"][nBig.Int64()]
+	platform_version := osPlatform["android"][nBig.Int64()]
 	var ua_platform, oscpu string
 	if navigatorID == "firefox" {
 		if deviceType == "smartphone" {
@@ -420,22 +422,22 @@ func buildSystemComponents(deviceType, OSID, navigatorID string) (map[string]str
 			ua_platform = fmt.Sprintf("%s; Tablet", platform_version)
 		}
 	} else if navigatorID == "chrome" {
-		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(OS_PLATFORM["android"]))))
+		nBig, err := rand.Int(rand.Reader, big.NewInt(int64(len(osPlatform["android"]))))
 		if err != nil {
 			return nil, err
 		}
-		platform_version = OS_PLATFORM["android"][nBig.Int64()]
-		nBig, err = rand.Int(rand.Reader, big.NewInt(int64(len(SMARTPHONE_DEV_IDS))))
+		platform_version = osPlatform["android"][nBig.Int64()]
+		nBig, err = rand.Int(rand.Reader, big.NewInt(int64(len(smartphoneDevIDs))))
 		if err != nil {
 			return nil, err
 		}
-		device_id := SMARTPHONE_DEV_IDS[nBig.Int64()]
+		device_id := smartphoneDevIDs[nBig.Int64()]
 		ua_platform = fmt.Sprintf("Linux; %s; %s", platform_version, device_id)
-		nBig, err = rand.Int(rand.Reader, big.NewInt(int64(len(OS_CPU["android"]))))
+		nBig, err = rand.Int(rand.Reader, big.NewInt(int64(len(osCPU["android"]))))
 		if err != nil {
 			return nil, err
 		}
-		oscpu = fmt.Sprintf("Linux %s", OS_CPU["android"][nBig.Int64()])
+		oscpu = fmt.Sprintf("Linux %s", osCPU["android"][nBig.Int64()])
 	}
 	return map[string]string{
 		"platform_version": platform_version,
@@ -554,17 +556,17 @@ func pickConfigIDs(cfg *UserAgentConfig) (string, string, string, error) {
 		navigator        []string
 		osPlatformKeys   []string
 	)
-	for k := range DEVICE_TYPE_OS {
+	for k := range deviceTypeOS {
 		deviceTypeOSKeys = append(deviceTypeOSKeys, k)
 	}
 
-	for j := range OS_NAVIGATOR {
+	for j := range osNavigator {
 		osNavigatorKeys = append(osNavigatorKeys, j)
 	}
-	for l := range NAVIGATOR_OS {
+	for l := range navigatorOS {
 		navigatorOSkeys = append(navigatorOSkeys, l)
 	}
-	for k := range OS_PLATFORM {
+	for k := range osPlatform {
 		osPlatformKeys = append(osPlatformKeys, k)
 	}
 	if cfg.OS == nil {
@@ -588,14 +590,12 @@ func pickConfigIDs(cfg *UserAgentConfig) (string, string, string, error) {
 	navChoices := getOptionChoices("navigator", navigator, navigatorOSkeys, navigatorOSkeys)
 	n := product(devTypeChoices, osChoices, navChoices)
 	i := len(devTypeChoices) * len(osChoices) * len(navChoices)
-	fmt.Println(i)
 	for i >= 0 {
 		i--
 		prod := n()
 		if len(prod) != 0 {
 			iter_dev, iter_os, iter_nav := prod[0], prod[1], prod[2]
-			fmt.Println(iter_dev, iter_os, iter_nav)
-			if contains(DEVICE_TYPE_OS[iter_dev], iter_os) && contains(DEVICE_TYPE_NAVIGATOR[iter_dev], iter_nav) && contains(OS_NAVIGATOR[iter_os], iter_nav) {
+			if contains(deviceTypeOS[iter_dev], iter_os) && contains(deviceTypeNavigator[iter_dev], iter_nav) && contains(osNavigator[iter_os], iter_nav) {
 				variants = append(variants, []string{iter_dev, iter_os, iter_nav})
 			}
 		}
@@ -640,10 +640,10 @@ func chooseUATemplate(device_type, navigator_id string, app map[string]string) a
 			tpl_name = "chrome_tablet"
 		}
 	}
-	return USERAGENTTEMPLATE[tpl_name]
+	return userAgentTemplate[tpl_name]
 }
 
-func build_navigator_app_version(OSID, navigatorID, platformVersion, userAgent string) string {
+func buildNavigatorAppVersion(OSID, navigatorID, platformVersion, userAgent string) string {
 	if navigatorID == "firefox" {
 		if OSID == "android" {
 			return fmt.Sprintf("5.0 (%s)", platformVersion)
@@ -665,21 +665,17 @@ func build_navigator_app_version(OSID, navigatorID, platformVersion, userAgent s
 // Generate web navigator's config
 func generateNavigator(config *UserAgentConfig) map[string]string {
 	device_type, os_id, navigator_id, _ := pickConfigIDs(config)
-	fmt.Println("device type", device_type, os_id, navigator_id)
 	system, _ := buildSystemComponents(device_type, os_id, navigator_id)
-	fmt.Println(system)
 	app, _ := buildAppComponents(os_id, navigator_id)
-	fmt.Println(app)
 	ua_template := chooseUATemplate(device_type, navigator_id, app)
-	fmt.Println(ua_template)
-	t := template.Must(template.New("letter").Parse(ua_template.(string)))
+	t := template.Must(template.New("ua").Parse(ua_template.(string)))
 	var tpl bytes.Buffer
 	_ = t.Execute(&tpl, uatmpl{
 		system,
 		app,
 	})
 	user_agent := tpl.String()
-	app_version := build_navigator_app_version(os_id, navigator_id, system["platform_version"], user_agent)
+	app_version := buildNavigatorAppVersion(os_id, navigator_id, system["platform_version"], user_agent)
 	return map[string]string{
 		// ids
 		"os_id":        os_id,
